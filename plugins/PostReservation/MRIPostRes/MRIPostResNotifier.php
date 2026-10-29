@@ -4,6 +4,7 @@ use LibreBooking\Mri\MriMessages;
 use LibreBooking\Limesurvey\RemoteControl;
 use LibreBooking\Mri\LogbookQuestions;
 use LibreBooking\Mri\MriReservationContext;
+use LibreBooking\Mri\ScreeningLinks;
 use LibreBooking\Mri\ParticipantHandover;
 
 /**
@@ -57,8 +58,11 @@ abstract class MRIPostResNotifier implements IReservationNotificationService
     private function monitoredContext($reservationSeries): ?MriReservationContext
     {
         if (!$this->usesMonitoredResource($reservationSeries)) {
+            Log::Debug('%s skips a reservation of other resources. Monitored=%s', static::class, implode(', ', MriPostResSettings::monitoredResourceNames()));
             return null;
         }
+
+        Log::Debug('%s works on a monitored reservation. SeriesId=%s', static::class, $reservationSeries->SeriesId());
 
         $context = MriReservationContext::for($reservationSeries);
         if ($context === null) {
@@ -173,6 +177,41 @@ abstract class MRIPostResNotifier implements IReservationNotificationService
     protected function ensureLogbookParticipant($lsClient, string $sessionKey, string $token): void
     {
         $lsClient->addParticipants($sessionKey, MriPostResSettings::logbookSurveyId(), [['token' => $token]]);
+    }
+
+    /**
+     * Replaces the screening link, unless it marks the screening as completed already.
+     */
+    protected function replaceScreeningLinkUnlessCompleted(int $seriesId, int $surveyId, string $link): void
+    {
+        $attributeId = MriPostResSettings::screeningLinkAttributeId();
+        $current = MriAttributeValues::read($seriesId, $attributeId);
+        $completedText = ScreeningLinks::completedText(
+            MriMessages::text(MriMessages::SCREENING_LINK_TEXT),
+            MriMessages::text(MriMessages::COMPLETED_SURVEY_TEXT)
+        );
+        if ($current !== null && ScreeningLinks::isCompleted($current, $completedText, MriPostResSettings::lsBaseUrl(), $surveyId)) {
+            return;
+        }
+
+        MriAttributeValues::replaceIfPresent($seriesId, $attributeId, $link);
+    }
+
+    /**
+     * The link to store once the screening is completed: its answers, or plain text when it has none (a phantom).
+     *
+     * @param int[] $responseIds [first, second] screening response ids, 0 when a response does not exist
+     */
+    protected function completedScreeningLink(int $surveyId, array $responseIds): string
+    {
+        if ($responseIds[0] > 0) {
+            return ScreeningLinks::responseUrl(MriPostResSettings::lsBaseUrl(), $surveyId, $responseIds[0]);
+        }
+
+        return ScreeningLinks::completedText(
+            MriMessages::text(MriMessages::SCREENING_LINK_TEXT),
+            MriMessages::text(MriMessages::COMPLETED_SURVEY_TEXT)
+        );
     }
 
     /**

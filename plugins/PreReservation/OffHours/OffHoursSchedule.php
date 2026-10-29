@@ -32,7 +32,7 @@ class OffHoursSchedule
 
             $windows = $this->ParseEntry($entry);
             if ($windows === null) {
-                Log::Error('Ignoring invalid OffHours regular hours entry: %s', $entry);
+                Log::Error('Ignoring invalid OffHours regular hours entry: %s. Entries are separated by ";", for example Mon-Fri:08:00-12:00;Mon-Fri:13:00-17:00', $entry);
                 continue;
             }
 

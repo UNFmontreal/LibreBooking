@@ -9,6 +9,7 @@ use LibreBooking\Limesurvey\RemoteControl;
 use LibreBooking\Mri\LibreBookingAttributeStore;
 use LibreBooking\Mri\MriReservation;
 use LibreBooking\Mri\LibreBookingReservationSource;
+use LibreBooking\Mri\ScreeningLinks;
 use LibreBooking\Mri\ScreeningLookup;
 use LibreBooking\Mri\ScreeningState;
 use LibreBooking\Mri\Settings;
@@ -65,13 +66,16 @@ final class ValidScreeningJob
             return false;
         }
 
+        $responseIds = $reservation->isPhantom ? [0, 0] : $this->responseIds($sessionKey, $state->participantToken);
+
+        // the screening link leads to the answers; a phantom has none, so it only says that the screening is completed
         $this->attributes->replaceIfPresent(
             $reservation->seriesId,
             $this->settings->screeningLinkAttributeId,
-            $this->settings->screeningLinkText . ' ' . $this->settings->completedText
+            $responseIds[0] > 0
+                ? ScreeningLinks::responseUrl($this->settings->lsBaseUrl, $this->settings->screeningSurveyId, $responseIds[0])
+                : ScreeningLinks::completedText($this->settings->screeningLinkText, $this->settings->completedText)
         );
-
-        $responseIds = $reservation->isPhantom ? [0, 0] : $this->responseIds($sessionKey, $state->participantToken);
 
         $this->remote->addParticipants($sessionKey, $this->settings->logbookSurveyId, [['token' => $state->participantToken]]);
         $this->reservations->setStatus($reservation->seriesId, \ReservationStatus::Created);

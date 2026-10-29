@@ -34,16 +34,19 @@ class LimesurveyScreeningPre implements IPreReservationFactory
         $this->factoryToDecorate = $factoryToDecorate;
 
         LimesurveyScreeningPreConfig::Register();
+        Log::Debug('LimesurveyScreeningPre is ready');
     }
 
     public function CreatePreAddService(UserSession $userSession)
     {
+        Log::Debug('LimesurveyScreeningPre creates the add service');
         $base = $this->factoryToDecorate->CreatePreAddService($userSession);
         return $this->withScreening($base, false);
     }
 
     public function CreatePreUpdateService(UserSession $userSession)
     {
+        Log::Debug('LimesurveyScreeningPre creates the update service');
         $base = $this->factoryToDecorate->CreatePreUpdateService($userSession);
         return $this->withScreening($base, true);
     }
@@ -93,6 +96,8 @@ class LimesurveyScreeningPre implements IPreReservationFactory
         if ($settings === null) {
             return $base;
         }
+
+        Log::Debug('LimesurveyScreeningPre screens the resources %s', implode(',', $settings->monitoredResourceIds));
 
         $gateway = $this->gateway($configFile);
         $studies = $this->studies($configFile);
@@ -147,6 +152,7 @@ class LimesurveyScreeningPre implements IPreReservationFactory
         $resourceNames = ResourceNames::parse((string) $configFile->GetKey(LimesurveyScreeningPreConfigKeys::RESOURCE_NAMES));
         $monitoredResourceIds = ResourceNames::idsOf($resourceNames);
         if (empty($monitoredResourceIds)) {
+            Log::Debug('LimesurveyScreeningPre has no monitored resource, so it screens nothing. ResourceNames=%s', implode(', ', $resourceNames));
             if (!empty($resourceNames)) {
                 Log::Error('LimesurveyScreeningPre is not screening anything: no resource is named %s', implode(', ', $resourceNames));
             }

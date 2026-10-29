@@ -2,6 +2,7 @@
 
 use LibreBooking\Mri\MriMessages;
 use LibreBooking\Mri\MriReservationContext;
+use LibreBooking\Mri\ScreeningLinks;
 
 /**
  * Post-reservation work for a newly created reservation.
@@ -68,10 +69,7 @@ class PostReservationCreated extends MRIPostResNotifier
         MriAttributeValues::replaceIfPresent(
             $seriesId,
             MriPostResSettings::screeningLinkAttributeId(),
-            MriScreeningLinks::completedText(
-                MriMessages::text(MriMessages::SCREENING_LINK_TEXT),
-                MriMessages::text(MriMessages::COMPLETED_SURVEY_TEXT)
-            )
+            $this->completedScreeningLink($surveyId, $responseIds)
         );
     }
 
@@ -83,29 +81,22 @@ class PostReservationCreated extends MRIPostResNotifier
         $baseUrl = MriPostResSettings::lsBaseUrl();
 
         if ($context->showScreeningLink) {
-            $url = MriScreeningLinks::indexedSurveyTokenUrl($baseUrl, $surveyId, $token);
+            $url = ScreeningLinks::indexedSurveyTokenUrl($baseUrl, $surveyId, $token);
             echo MriMessages::text(MriMessages::SCREENING_LINK_PRE_TEXT)
                 . '<a href="' . $url . '">' . $linkText . '</a><br>';
 
             MriAttributeValues::replaceIfPresent(
                 $seriesId,
                 MriPostResSettings::screeningLinkAttributeId(),
-                MriScreeningLinks::surveyTokenUrl($baseUrl, $surveyId, $token)
+                ScreeningLinks::surveyTokenUrl($baseUrl, $surveyId, $token)
             );
             return;
         }
 
-        MriAttributeValues::replaceIfPresent(
+        $this->replaceScreeningLinkUnlessCompleted(
             $seriesId,
-            MriPostResSettings::screeningLinkAttributeId(),
-            MriScreeningLinks::notCompletedText(
-                $linkText,
-                MriMessages::text(MriMessages::NOT_COMPLETED_SURVEY_TEXT)
-            ),
-            MriScreeningLinks::completedText(
-                $linkText,
-                MriMessages::text(MriMessages::COMPLETED_SURVEY_TEXT)
-            )
+            $surveyId,
+            ScreeningLinks::notCompletedText($linkText, MriMessages::text(MriMessages::NOT_COMPLETED_SURVEY_TEXT))
         );
     }
 }

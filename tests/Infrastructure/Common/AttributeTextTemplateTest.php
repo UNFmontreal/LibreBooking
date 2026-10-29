@@ -41,7 +41,48 @@ class AttributeTextTemplateTest extends TestBase
         $this->assertStringNotContainsString('<a href', $output);
     }
 
-    private function render(string $template, string $label, string $value): string
+    public function testEditableFieldKeepsItsInputByDefault()
+    {
+        $output = $this->render('SingleLineTextbox.tpl', 'Screening link', 'https://ls.example/12/token/REF-1', false);
+
+        $this->assertStringContainsString('<input id="attribute-1"', $output);
+        $this->assertStringNotContainsString('<a href', $output);
+    }
+
+    public function testLinkIsShownInsteadOfAnInputWhenLinksAreRequested()
+    {
+        $output = $this->render('SingleLineTextbox.tpl', 'Screening link', 'https://ls.example/12/token/REF-1', false, true);
+
+        $this->assertStringContainsString('<a href="https://ls.example/12/token/REF-1"', $output);
+        $this->assertStringNotContainsString('<input id=', $output);
+        // the value is still posted with the form, so saving the reservation does not clear the attribute
+        $this->assertMatchesRegularExpression('/<input type="hidden" id="attribute-1" name="attribute\[1\]" value="https:\/\/ls.example\/12\/token\/REF-1"/', $output);
+    }
+
+    public function testPlainTextStaysEditableWhenLinksAreRequested()
+    {
+        $output = $this->render('SingleLineTextbox.tpl', 'Session name', 'ANT_001', false, true);
+
+        $this->assertStringContainsString('<input id="attribute-1"', $output);
+        $this->assertStringNotContainsString('type="hidden"', $output);
+    }
+
+    public function testLinkValueIsEscapedInTheHiddenInput()
+    {
+        $output = $this->render('SingleLineTextbox.tpl', 'Screening link', 'https://ls.example/x?a=1&b="2"', false, true);
+
+        $this->assertStringNotContainsString('value="https://ls.example/x?a=1&b="2""', $output);
+        $this->assertStringContainsString('&quot;', $output);
+    }
+
+    public function testSearchFieldsAreNeverReplacedByLinks()
+    {
+        $output = $this->render('SingleLineTextbox.tpl', 'Screening link', 'https://ls.example/x', false, true, true);
+
+        $this->assertStringContainsString('<input id="attribute-1"', $output);
+    }
+
+    private function render(string $template, string $label, string $value, bool $readonly = true, bool $showLinks = false, bool $searchmode = false): string
     {
         $attribute = new class ($label, $value) {
             public function __construct(private string $label, private string $value)
@@ -74,8 +115,9 @@ class AttributeTextTemplateTest extends TestBase
         $page->assign('attributeId', 'attribute-1');
         $page->assign('attributeName', 'attribute[1]');
         $page->assign('class', '');
-        $page->assign('readonly', true);
-        $page->assign('searchmode', false);
+        $page->assign('readonly', $readonly);
+        $page->assign('showLinks', $showLinks);
+        $page->assign('searchmode', $searchmode);
 
         return $page->fetch('Controls/Attributes/' . $template);
     }

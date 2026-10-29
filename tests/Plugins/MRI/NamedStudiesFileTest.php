@@ -67,4 +67,27 @@ class NamedStudiesFileTest extends TestBase
         $this->assertSame('p01', $catalog->find('p01_liris001')->participantKey());
         $this->assertSame('p01', $catalog->find('p01_harrypotter')->participantKey());
     }
+
+    public function testAlternativeNameFormatsMayReuseGroupNames()
+    {
+        $catalog = StudyCatalog::fromStudies(StudyCatalog::parse((string) file_get_contents(self::FILE)));
+
+        $first = $catalog->find('1234567_123456_V03');
+        $second = $catalog->find('lego_iugm_12');
+        $third = $catalog->find('JGH0001_123456_Initial_MRI');
+        $fourth = $catalog->find('human_phantom_AB_UNF_20260101');
+
+        $this->assertSame(['', '1234567', 'V03'], [$first->prefix, $first->subject, $first->session]);
+        $this->assertSame(['lego_iugm', '', '12'], [$second->prefix, $second->subject, $second->session]);
+        $this->assertSame(['JGH', '0001', 'Initial_MRI'], [$third->prefix, $third->subject, $third->session]);
+        $this->assertSame(['', 'human_phantom_AB', 'UNF_20260101'], [$fourth->prefix, $fourth->subject, $fourth->session]);
+    }
+
+    public function testDevSessionNamesMatchTheDevStudy()
+    {
+        $catalog = StudyCatalog::fromStudies(StudyCatalog::parse((string) file_get_contents(self::FILE)));
+
+        $this->assertNotNull($catalog->find('dev_12312aaaaaaaaasssssaa'));
+        $this->assertNull($catalog->find('nope_12312'));
+    }
 }

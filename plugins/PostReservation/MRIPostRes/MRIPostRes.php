@@ -34,7 +34,6 @@ require_once(dirname(__FILE__) . '/../../PreReservation/LimesurveyScreeningPre/L
 
 require_once(dirname(__FILE__) . '/MriCancellationWindow.php');
 require_once(dirname(__FILE__) . '/MriLimesurvey.php');
-require_once(dirname(__FILE__) . '/MriScreeningLinks.php');
 require_once(dirname(__FILE__) . '/MriPostResSettings.php');
 require_once(dirname(__FILE__) . '/MriAttributeValues.php');
 require_once(dirname(__FILE__) . '/MriSeriesStatus.php');
@@ -58,6 +57,7 @@ class MRIPostRes implements IPostReservationFactory
     {
         $this->factoryToDecorate = $factoryToDecorate;
         LimesurveyScreeningPreConfig::Register();
+        Log::Debug('MRIPostRes is ready');
     }
 
     /**

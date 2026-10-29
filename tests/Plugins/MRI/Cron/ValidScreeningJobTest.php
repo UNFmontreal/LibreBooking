@@ -38,7 +38,7 @@ class ValidScreeningJobTest extends TestBase
         $this->assertSame(1, $completed);
         $this->assertSame(\ReservationStatus::Created, $reservations->statusWrites[100]);
         $this->assertSame('https://ls/logbook?token=REF-A&id=5', $attributes->values['100:9']);
-        $this->assertSame('Screening Complete', $attributes->values['100:8']);
+        $this->assertSame('https://ls/index.php/admin/dataentry/sa/editdata/subaction/edit/surveyid/' . TestSupport::SCREENING_SURVEY . '/id/5', $attributes->values['100:8']);
         $this->assertContains('add_participants', $fake->methods());
         $this->assertContains('release_session_key', $fake->methods());
     }

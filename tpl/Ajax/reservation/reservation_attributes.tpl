@@ -3,7 +3,7 @@
         <div class="row gy-2">
             {foreach from=$Attributes item=attribute name=attributes}
                 <div class="customAttribute col-sm-4 col-12">
-                    {control type="AttributeControl" attribute=$attribute readonly=$ReadOnly}
+                    {control type="AttributeControl" attribute=$attribute readonly=$ReadOnly showLinks=true}
                 </div>
             {/foreach}
         </div>

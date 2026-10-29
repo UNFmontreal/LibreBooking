@@ -1,4 +1,7 @@
 <div class="form-group {if isset($class)}{$class}{/if}">
+	{$escapedValue = $attribute->Value()|default:''|escape}
+	{$linkedValue = $escapedValue|url2link}
+	{$valueHasLink = ($linkedValue != $escapedValue)}
 	{if isset($readonly) && $readonly && isset($tooltip) && $tooltip}
 		<span class="customAttribute readonly">{$attribute->Label()}{if $attribute->Required() && !$searchmode}
 				<i class="bi bi-asterisk text-danger align-top text-small"></i>
@@ -11,7 +14,10 @@
 			{/if}</label>
 	{/if}
 	{if isset($readonly) && $readonly}
-		<span class="attributeValue {$class}">{$attribute->Value()|escape|url2link}</span>
+		<span class="attributeValue {$class}">{$linkedValue}</span>
+	{elseif isset($showLinks) && $showLinks && empty($searchmode) && $valueHasLink}
+		<span class="attributeValue {$class}">{$linkedValue}</span>
+		<input type="hidden" id="{$attributeId}" name="{$attributeName}" value="{$escapedValue}" />
 	{else}
 		<div class="position-relative">
 			<input id="{$attributeId}" name="{$attributeName}" value="{$attribute->Value()}" class="customAttribute form-control form-control-sm

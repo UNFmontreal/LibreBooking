@@ -111,8 +111,15 @@ class PreReservationChain implements IPreReservationFactory
     private static function loadPlugin(string $name, IPreReservationFactory $inner): IPreReservationFactory
     {
         Log::Debug('Loading chained plugin. Plugin=%s', $name);
-        require_once(ROOT_DIR . "plugins/PreReservation/$name/$name.php");
 
-        return new $name($inner);
+        try {
+            require_once(ROOT_DIR . "plugins/PreReservation/$name/$name.php");
+
+            return new $name($inner);
+        } catch (Throwable $ex) {
+            // the plugin manager that loads this chain logs a failure without its reason
+            Log::Error('PreReservationChain could not load a plugin. Plugin=%s, Error=%s', $name, $ex);
+            throw $ex;
+        }
     }
 }

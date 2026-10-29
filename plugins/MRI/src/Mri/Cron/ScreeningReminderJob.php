@@ -9,6 +9,7 @@ use LibreBooking\Limesurvey\RemoteControl;
 use LibreBooking\Mri\LibreBookingMailer;
 use LibreBooking\Mri\MriReservation;
 use LibreBooking\Mri\LibreBookingReservationSource;
+use LibreBooking\Mri\ScreeningLinks;
 use LibreBooking\Mri\ScreeningLookup;
 use LibreBooking\Mri\Settings;
 
@@ -87,6 +88,6 @@ final class ScreeningReminderJob
 
     private function surveyUrl(string $token): string
     {
-        return $this->settings->lsBaseUrl . '/' . $this->settings->screeningSurveyId . '/token/' . $token;
+        return ScreeningLinks::surveyTokenUrl($this->settings->lsBaseUrl, $this->settings->screeningSurveyId, $token);
     }
 }

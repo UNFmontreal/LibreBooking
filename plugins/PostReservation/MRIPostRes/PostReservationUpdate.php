@@ -4,6 +4,7 @@ use LibreBooking\Mri\MriMessages;
 use LibreBooking\Mri\LogbookQuestions;
 use LibreBooking\Mri\LogbookUpdate;
 use LibreBooking\Mri\MriReservationContext;
+use LibreBooking\Mri\ScreeningLinks;
 use LibreBooking\Mri\MriTime;
 
 /**
@@ -184,6 +185,9 @@ class PostReservationUpdate extends MRIPostResNotifier
     private function storeCompletedScreening($reservationSeries, $instance, $lsClient, string $sessionKey, MriReservationContext $context, int $surveyId): void
     {
         $seriesId = $reservationSeries->SeriesId();
+
+        // the logbook link opens the logbook of this reservation's token, so the participant has to exist
+        $this->ensureLogbookParticipant($lsClient, $sessionKey, $instance->ReferenceNumber());
         $responseIds = $this->isPhantom($reservationSeries)
             ? [0, 0]
             : $this->screeningResponseIds($lsClient, $sessionKey, $context->screening->participantName, $surveyId, true);
@@ -197,10 +201,7 @@ class PostReservationUpdate extends MRIPostResNotifier
         MriAttributeValues::set(
             $seriesId,
             MriPostResSettings::screeningLinkAttributeId(),
-            MriScreeningLinks::completedText(
-                MriMessages::text(MriMessages::SCREENING_LINK_TEXT),
-                MriMessages::text(MriMessages::COMPLETED_SURVEY_TEXT)
-            )
+            $this->completedScreeningLink($surveyId, $responseIds)
         );
     }
 
@@ -212,14 +213,14 @@ class PostReservationUpdate extends MRIPostResNotifier
         $baseUrl = MriPostResSettings::lsBaseUrl();
 
         if ($context->showScreeningLink) {
-            $url = MriScreeningLinks::surveyTokenUrl($baseUrl, $surveyId, $token);
+            $url = ScreeningLinks::surveyTokenUrl($baseUrl, $surveyId, $token);
             echo '<br>' . MriMessages::text(MriMessages::SCREENING_LINK_PRE_TEXT)
                 . '<a href="' . $url . '">' . $linkText . '</a><br>';
 
             MriAttributeValues::set(
                 $seriesId,
                 MriPostResSettings::screeningLinkAttributeId(),
-                MriScreeningLinks::surveyTokenUrl($baseUrl, $surveyId, $token)
+                ScreeningLinks::surveyTokenUrl($baseUrl, $surveyId, $token)
             );
             return;
         }
@@ -227,7 +228,7 @@ class PostReservationUpdate extends MRIPostResNotifier
         MriAttributeValues::set(
             $seriesId,
             MriPostResSettings::screeningLinkAttributeId(),
-            MriScreeningLinks::notCompletedText(
+            ScreeningLinks::notCompletedText(
                 $linkText,
                 MriMessages::text(MriMessages::NOT_COMPLETED_SURVEY_TEXT)
             )

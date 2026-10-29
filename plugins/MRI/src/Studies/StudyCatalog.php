@@ -188,7 +188,8 @@ final class StudyCatalog
     }
 
     /**
-     * Wraps the regex with delimiters and anchors so it must match the entire name.
+     * Wraps the regex with delimiters and anchors so it must match the entire name. Alternatives may name a group
+     * the same way, for example the session of two name formats; the group that matched gives the value.
      *
      * @return string|null the compiled pattern, or null if the regex is not usable
      */
@@ -199,7 +200,7 @@ final class StudyCatalog
                 continue;
             }
 
-            $pattern = $delimiter . '\A(?:' . $regex . ')\z' . $delimiter . 'u';
+            $pattern = $delimiter . '\A(?J)(?:' . $regex . ')\z' . $delimiter . 'u';
 
             // preg_match returns false (and warns) when the regex does not compile
             return @preg_match($pattern, '') === false ? null : $pattern;

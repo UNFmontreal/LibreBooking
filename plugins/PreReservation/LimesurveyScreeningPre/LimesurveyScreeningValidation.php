@@ -59,6 +59,11 @@ class LimesurveyScreeningValidation implements IReservationValidationService
 
         $resourceIds = array_map('intval', $series->AllResourceIds());
         if (empty(array_intersect($resourceIds, $this->settings->monitoredResourceIds))) {
+            Log::Debug(
+                'LimesurveyScreeningPre skips a reservation of other resources. Resources=%s, Monitored=%s',
+                implode(',', $resourceIds),
+                implode(',', $this->settings->monitoredResourceIds)
+            );
             return $result;
         }
 
@@ -71,6 +76,8 @@ class LimesurveyScreeningValidation implements IReservationValidationService
         if (!$studies->isAvailable()) {
             return $this->denied($this->settings->unavailableMessage);
         }
+
+        Log::Debug('LimesurveyScreeningPre screens a reservation. SessionName=%s, Update=%s', $sessionName, $this->isUpdate ? 'yes' : 'no');
 
         $match = $studies->find($sessionName);
         if ($match === null) {

@@ -19,17 +19,23 @@ final class ResourceNames
 
     /**
      * @param string[] $names
-     * @return int[] ids of the resources that have these names; unknown names are skipped
+     * @param (callable(string): object)|null $load loads the resource with a name; defaults to the resource repository.
+     *        A name that matches no resource gives a resource without id, as the repository does
+     * @return int[] ids of the resources that have these names; unknown names are logged and skipped
      */
-    public static function idsOf(array $names): array
+    public static function idsOf(array $names, ?callable $load = null): array
     {
+        $load ??= fn (string $name): object => (new \ResourceRepository())->LoadByName($name);
+
         $ids = [];
-        $repository = new \ResourceRepository();
         foreach ($names as $name) {
-            $resource = $repository->LoadByName($name);
-            if ($resource !== null) {
-                $ids[] = (int) $resource->GetId();
+            $id = (int) $load($name)->GetId();
+            if ($id === 0) {
+                \Log::Error('MRI: no resource is named "%s"', $name);
+                continue;
             }
+
+            $ids[] = $id;
         }
 
         return $ids;
