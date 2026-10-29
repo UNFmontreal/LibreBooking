@@ -10,7 +10,7 @@
             {/if}</label>
     {/if}
     {if $readonly}
-        <span class="attributeValue {$class}">{$attribute->Value()|nl2br}</span>
+        <span class="attributeValue {$class}">{$attribute->Value()|escape|url2link|nl2br}</span>
     {else}
         <div class="position-relative">
             <textarea id="{$attributeId}" name="{$attributeName}" rows="2"

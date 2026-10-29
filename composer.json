@@ -9,7 +9,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "LibreBooking\\Tests\\": "tests/src/"
+            "LibreBooking\\Tests\\": "tests/src/",
+            "LibreBooking\\Tests\\Plugins\\MRI\\": "tests/Plugins/MRI/"
         }
     },
     "require-dev": {

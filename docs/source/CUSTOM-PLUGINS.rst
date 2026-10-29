@@ -772,6 +772,29 @@ Validation service example:
        }
    }
 
+Running Several Pre-Reservation Plugins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+LibreBooking loads one plugin per type. The built-in ``PreReservationChain``
+plugin combines the ``OffHours``, ``EnforceStudiesName`` and
+``LimesurveyScreeningPre`` plugins. Enable it in ``config/config.php``:
+
+.. code-block:: php
+
+   'plugins' => [
+       'prereservation' => 'PreReservationChain',
+   ],
+
+Its only setting, ``plugins`` in ``PreReservationChain.config.php``, is a comma
+separated list of the plugins to activate. They always run in the order
+``OffHours``, ``EnforceStudiesName``, ``LimesurveyScreeningPre``, whatever the
+order of the list, and a plugin only runs when the ones before it allowed the
+reservation. Each plugin keeps its own configuration file.
+
+To chain your own plugin, type its constructor argument as
+``IPreReservationFactory`` rather than ``PreReservationFactory`` so that it can
+decorate another plugin.
+
 Post-Reservation Plugins
 ------------------------
 

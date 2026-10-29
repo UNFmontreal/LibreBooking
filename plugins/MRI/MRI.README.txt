@@ -1,0 +1,58 @@
+MRI PreRes Plugin
+**************************************************************
+Copyright 2021 APPS-N-ADD-ONS.COM
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+and associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies
+or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+**************************************************************
+       this package may contain 'snippets' from various
+ websites/vendors with terms/conditions under other use license
+            see individual license terms as referenced
+***************************************************************
+     this package is designed to work with Booked Scheduler
+************************** NO USER CONFIGURATION ITEMS ********************************
+
+MRI cron jobs and helpers
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Settings
+  The MRI settings are the configuration of the LimesurveyScreeningPre plugin
+  (plugins/PreReservation/LimesurveyScreeningPre/LimesurveyScreeningPre.config.php). The pre-reservation plugin, the
+  post-reservation plugin and the cron jobs all read it. Set them in that file or through the administration
+  configuration page. The texts of the emails and messages, and the labels of the settings, are in plugins/MRI/lang.
+
+Plugins
+  Enable the MRI plugins in config/config.php:
+    $conf['settings']['plugins']['PreReservation'] = 'LimesurveyScreeningPre';
+    $conf['settings']['plugins']['PostReservation'] = 'MRIPostRes';
+
+Files
+  MriCronBootstrap.php
+      Shared start-up of the cron jobs (command line only).
+  MRICRON_valid_screening.php
+      Marks reservations as Created once their screening is completed in LimeSurvey.
+  MRICRON_reminder_screening.php
+      Emails the owner of an upcoming reservation until the screening is completed.
+  MRICRON_reminder_logbook.php
+      Reminds the MRI operator to complete the logbook entry of a finished reservation.
+  MRICRON.php
+      Legacy cron. It does not load: line 370 has a syntax error and it includes MRI.functions.php, which was removed. It holds the
+      reservation colour rule for screened reservations, which the jobs above do not set.
+
+Scheduling (command line only; the scripts refuse web requests)
+  php plugins/MRI/MRICRON_valid_screening.php          (every hour)
+  php plugins/MRI/MRICRON_reminder_screening.php       (once a day)
+  php plugins/MRI/MRICRON_reminder_logbook.php         (once a day)

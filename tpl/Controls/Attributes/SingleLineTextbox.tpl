@@ -11,7 +11,7 @@
 			{/if}</label>
 	{/if}
 	{if isset($readonly) && $readonly}
-		<span class="attributeValue {$class}">{$attribute->Value()}</span>
+		<span class="attributeValue {$class}">{$attribute->Value()|escape|url2link}</span>
 	{else}
 		<div class="position-relative">
 			<input id="{$attributeId}" name="{$attributeName}" value="{$attribute->Value()}" class="customAttribute form-control form-control-sm
