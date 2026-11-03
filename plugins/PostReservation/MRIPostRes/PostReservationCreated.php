@@ -43,7 +43,10 @@ class PostReservationCreated extends MRIPostResNotifier
             }
 
             if ($instance !== null) {
-                MriOperator::syncForNewInstance($this->operatorUserId($reservationSeries), $instance->ReservationId());
+                $reservationId = $instance->ReservationId() ?? MriOperator::reservationIdByReference($instance->ReferenceNumber());
+                if ($reservationId !== null) {
+                    MriOperator::syncForNewInstance((int) $this->operatorUserId($reservationSeries), (int) $reservationId);
+                }
             }
         });
     }

@@ -34,6 +34,26 @@ final class MriOperator
         self::addOperator($operatorId, $reservationId);
     }
 
+    /**
+     * Finds the id of an instance by its reference number.
+     *
+     * Needed on the create path: the repository does not set the id on the in-memory instance after the insert.
+     */
+    public static function reservationIdByReference(string $referenceNumber): ?int
+    {
+        if (!preg_match('/^[A-Za-z0-9]+$/', $referenceNumber)) {
+            return null;
+        }
+
+        $reader = ServiceLocator::GetDatabase()->Query(new AdHocCommand(
+            "select reservation_instance_id from reservation_instances where reference_number = '$referenceNumber'"
+        ));
+        $row = $reader->GetRow();
+        $reader->Free();
+
+        return $row ? (int) $row['reservation_instance_id'] : null;
+    }
+
     private static function addOperator(int $operatorId, int $reservationId): void
     {
         if ($operatorId === 0) {
